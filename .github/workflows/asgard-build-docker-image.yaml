@@ -1,0 +1,72 @@
+name: asgard build docker image flow
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  IMAGE_TAG: ${{ github.ref_name }}
+  FIRECRAWL_PLAYWRIGHT_ECR_REPOSITORY: firecrawl-playwright
+  FIRECRAWL_ECR_REPOSITORY: firecrawl
+
+jobs:
+  Build-firecrawl-playwright:
+    name: Build firecrawl-playwright
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push the image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+        run: |
+          # Build a docker containers and push it to ECR
+          docker build --platform linux/amd64 -t ${ECR_REGISTRY}/${FIRECRAWL_PLAYWRIGHT_ECR_REPOSITORY}:${IMAGE_TAG} apps/playwright-service-ts
+          echo "Pushing image to ECR..."
+          docker push ${ECR_REGISTRY}/${FIRECRAWL_PLAYWRIGHT_ECR_REPOSITORY}:${IMAGE_TAG}
+
+  Build-firecrawl:
+    name: Build firecrawl
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push the image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+        run: |
+          # Build a docker containers and push it to ECR
+          docker build --platform linux/amd64 -t ${ECR_REGISTRY}/${FIRECRAWL_ECR_REPOSITORY}:${IMAGE_TAG} apps/api
+          echo "Pushing image to ECR..."
+          docker push ${ECR_REGISTRY}/${FIRECRAWL_ECR_REPOSITORY}:${IMAGE_TAG}
