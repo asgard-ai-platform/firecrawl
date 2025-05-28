@@ -1,11 +1,12 @@
 name: Server Test Suite
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - apps/api/**
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - apps/api/**
+  workflow_dispatch:
   # schedule:
   #   - cron: '0 */4 * * *'
 

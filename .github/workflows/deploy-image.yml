@@ -4,11 +4,11 @@ env:
   DOTNET_VERSION: '6.0.x'
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - apps/api/**
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - apps/api/**
   workflow_dispatch:
 
 jobs:

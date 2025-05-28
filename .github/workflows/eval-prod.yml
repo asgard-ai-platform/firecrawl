@@ -6,12 +6,12 @@ env:
   EVAL_EXPERIMENT_ID: ${{ secrets.EVAL_BENCHMARK_EXPERIMENT_ID }}
 
 on:
-  workflow_run:
-    workflows: ["Deploy Images to GHCR"]
-    types:
-      - completed
-    branches:
-      - main
+  # workflow_run:
+  #   workflows: ["Deploy Images to GHCR"]
+  #   types:
+  #     - completed
+  #   branches:
+  #     - main
   workflow_dispatch:
 
 jobs:

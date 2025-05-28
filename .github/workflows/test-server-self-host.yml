@@ -1,12 +1,13 @@
 name: Self-hosted Server Test Suite
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - apps/api/**
-      - apps/playwright-service-ts/**
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - apps/api/**
+  #     - apps/playwright-service-ts/**
+  workflow_dispatch:
 
 env:
   PORT: 3002
