@@ -18,13 +18,14 @@ import { logger } from "./lib/logger";
 import { adminRouter } from "./routes/admin";
 import http from "node:http";
 import https from "node:https";
-import CacheableLookup from "cacheable-lookup";
 import { v1Router } from "./routes/v1";
 import expressWs from "express-ws";
 import { ErrorResponse, ResponseWithSentry } from "./controllers/v1/types";
 import { ZodError } from "zod";
 import { v4 as uuidv4 } from "uuid";
 import { RateLimiterMode } from "./types";
+import { attachWsProxy } from "./services/agentLivecastWS";
+import { cacheableLookup } from "./scraper/scrapeURL/lib/cacheableLookup";
 
 const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
@@ -33,13 +34,13 @@ const { ExpressAdapter } = require("@bull-board/express");
 const numCPUs = process.env.ENV === "local" ? 2 : os.cpus().length;
 logger.info(`Number of CPUs: ${numCPUs} available`);
 
-const cacheable = new CacheableLookup();
-
 // Install cacheable lookup for all other requests
-cacheable.install(http.globalAgent);
-cacheable.install(https.globalAgent);
+cacheableLookup.install(http.globalAgent);
+cacheableLookup.install(https.globalAgent);
 
-const ws = expressWs(express());
+// Initialize Express with WebSocket support
+const expressApp = express();
+const ws = expressWs(expressApp);
 const app = ws.app;
 
 global.isProduction = process.env.IS_PRODUCTION === "true";
@@ -87,6 +88,9 @@ const DEFAULT_PORT = process.env.PORT ?? 3002;
 const HOST = process.env.HOST ?? "localhost";
 
 function startServer(port = DEFAULT_PORT) {
+  // Attach WebSocket proxy to the Express app
+  attachWsProxy(app);
+  
   const server = app.listen(Number(port), HOST, () => {
     logger.info(`Worker ${process.pid} listening on port ${port}`);
   });

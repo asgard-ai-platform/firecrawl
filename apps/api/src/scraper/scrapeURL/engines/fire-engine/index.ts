@@ -17,6 +17,7 @@ import {
   ActionError,
   EngineError,
   SiteError,
+  SSLError,
   TimeoutError,
   UnsupportedFileError,
 } from "../../error";
@@ -94,6 +95,7 @@ async function performFireEngineScrape<
       } else if (
         error instanceof EngineError ||
         error instanceof SiteError ||
+        error instanceof SSLError ||
         error instanceof ActionError ||
         error instanceof UnsupportedFileError
       ) {
@@ -222,6 +224,7 @@ export async function scrapeURLWithFireEngineChromeCDP(
     disableSmartWaitCache: meta.internalOptions.disableSmartWaitCache,
     blockAds: meta.options.blockAds,
     mobileProxy: meta.options.proxy === undefined ? undefined : meta.options.proxy === "stealth" ? true : false,
+    saveScrapeResultToGCS: meta.internalOptions.saveScrapeResultToGCS,
     // TODO: scrollXPaths
   };
 
