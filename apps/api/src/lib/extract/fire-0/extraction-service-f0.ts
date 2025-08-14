@@ -118,9 +118,11 @@ import { getACUCTeam } from "../../../controllers/auth";
         url: request.urls?.join(", ") || "",
         scrapeOptions: request,
         origin: request.origin ?? "api",
+        integration: request.integration,
         num_tokens: 0,
         tokens_billed: 0,
         sources,
+        zeroDataRetention: false, // not supported
       });
       return {
         success: false,
@@ -219,9 +221,11 @@ import { getACUCTeam } from "../../../controllers/auth";
         url: request.urls?.join(", ") || "",
         scrapeOptions: request,
         origin: request.origin ?? "api",
+        integration: request.integration,
         num_tokens: 0,
         tokens_billed: 0,
         sources,
+        zeroDataRetention: false, // not supported
       });
       return {
         success: false,
@@ -338,8 +342,9 @@ import { getACUCTeam } from "../../../controllers/auth";
             {
               url,
               teamId,
-              origin: request.origin || "api",
+              origin: "extract",
               timeout,
+              flags: acuc?.flags ?? null,
             },
             urlTraces,
             logger.child({
@@ -568,9 +573,11 @@ import { getACUCTeam } from "../../../controllers/auth";
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed: 0,
           sources,
+          zeroDataRetention: false, // not supported
         });
         return {
           success: false,
@@ -616,8 +623,9 @@ import { getACUCTeam } from "../../../controllers/auth";
             {
               url,
               teamId,
-              origin: request.origin || "api",
+              origin: "extract",
               timeout,
+              flags: acuc?.flags ?? null,
             },
             urlTraces,
             logger.child({
@@ -663,9 +671,11 @@ import { getACUCTeam } from "../../../controllers/auth";
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed: 0,
           sources,
+          zeroDataRetention: false, // not supported
         });
         return {
           success: false,
@@ -691,9 +701,11 @@ import { getACUCTeam } from "../../../controllers/auth";
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed: 0,
           sources,
+          zeroDataRetention: false, // not supported
         });
         return {
           success: false,
@@ -852,14 +864,17 @@ import { getACUCTeam } from "../../../controllers/auth";
       url: request.urls?.join(", ") || "",
       scrapeOptions: request,
       origin: request.origin ?? "api",
+      integration: request.integration,
       num_tokens: totalTokensUsed,
       tokens_billed: tokensToBill,
       sources,
+      zeroDataRetention: false, // not supported
     }).then(() => {
       updateExtract(extractId, {
         status: "completed",
         llmUsage,
         sources,
+        tokensBilled: tokensToBill,
       }).catch((error) => {
         logger.error(
           `Failed to update extract ${extractId} status to completed: ${error}`,

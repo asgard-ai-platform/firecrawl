@@ -37,6 +37,7 @@ import { normalizeUrl } from "../canonical-url";
 import { search } from "../../search";
 import { buildRephraseToSerpPrompt } from "./build-prompts";
 import { getACUCTeam } from "../../controllers/auth";
+import { isUrlBlocked } from "../../scraper/WebScraper/utils/blocklist";
 interface ExtractServiceOptions {
   request: ExtractRequest;
   teamId: string;
@@ -185,10 +186,12 @@ export async function performExtraction(
         url: request.urls?.join(", ") || "",
         scrapeOptions: request,
         origin: request.origin ?? "api",
+        integration: request.integration,
         num_tokens: 0,
         tokens_billed,
         sources,
         cost_tracking: costTracking,
+        zeroDataRetention: false, // not supported
       });
 
       await billTeam(teamId, subId, tokens_billed, logger, true).catch((error) => {
@@ -403,8 +406,9 @@ export async function performExtraction(
             {
               url,
               teamId,
-              origin: request.origin || "api",
+              origin: "extract",
               timeout,
+              flags: acuc?.flags ?? null,
             },
             urlTraces,
             logger.child({
@@ -680,10 +684,12 @@ export async function performExtraction(
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed,
           sources,
           cost_tracking: costTracking,
+          zeroDataRetention: false, // not supported
         });
         await billTeam(teamId, subId, tokens_billed, logger, true).catch((error) => {
           logger.error(
@@ -736,8 +742,9 @@ export async function performExtraction(
             {
               url,
               teamId,
-              origin: request.origin || "api",
+              origin: "extract",
               timeout,
+              flags: acuc?.flags ?? null,
             },
             urlTraces,
             logger.child({
@@ -787,10 +794,12 @@ export async function performExtraction(
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed,
           sources,
           cost_tracking: costTracking,
+          zeroDataRetention: false, // not supported
         });
         await billTeam(teamId, subId, tokens_billed, logger, true).catch((error) => {
           logger.error(
@@ -827,10 +836,12 @@ export async function performExtraction(
           url: request.urls?.join(", ") || "",
           scrapeOptions: request,
           origin: request.origin ?? "api",
+          integration: request.integration,
           num_tokens: 0,
           tokens_billed,
           sources,
           cost_tracking: costTracking,
+          zeroDataRetention: false, // not supported
         });
         return {
           success: false,
@@ -1011,15 +1022,18 @@ export async function performExtraction(
       url: request.urls?.join(", ") || "",
       scrapeOptions: request,
       origin: request.origin ?? "api",
+      integration: request.integration,
       num_tokens: totalTokensUsed,
       tokens_billed: tokensToBill,
       sources,
       cost_tracking: costTracking,
+      zeroDataRetention: false, // not supported
     }).then(() => {
       updateExtract(extractId, {
         status: "completed",
         llmUsage,
         sources,
+        tokensBilled: tokensToBill,
         // costTracking,
       }).catch((error) => {
         logger.error(
@@ -1079,10 +1093,12 @@ export async function performExtraction(
       url: request.urls?.join(", ") || "",
       scrapeOptions: request,
       origin: request.origin ?? "api",
+      integration: request.integration,
       num_tokens: 0,
       tokens_billed,
       sources,
       cost_tracking: costTracking,
+      zeroDataRetention: false, // not supported
     });
     
     throw error;

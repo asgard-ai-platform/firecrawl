@@ -35,11 +35,13 @@ import { generateLLMsTextStatusController } from "../controllers/v1/generate-llm
 import { deepResearchController } from "../controllers/v1/deep-research";
 import { deepResearchStatusController } from "../controllers/v1/deep-research-status";
 import { tokenUsageController } from "../controllers/v1/token-usage";
+import { ongoingCrawlsController } from "../controllers/v1/crawl-ongoing";
 
 function checkCreditsMiddleware(
-  minimum?: number,
+  _minimum?: number,
 ): (req: RequestWithAuth, res: Response, next: NextFunction) => void {
   return (req, res, next) => {
+    let minimum = _minimum;
     (async () => {
       if (!minimum && req.body) {
         minimum =
@@ -90,19 +92,20 @@ function checkCreditsMiddleware(
 }
 
 export function authMiddleware(
-  rateLimiterMode: RateLimiterMode,
+  rateLimiterMode: RateLimiterMode
 ): (req: RequestWithMaybeAuth, res: Response, next: NextFunction) => void {
   return (req, res, next) => {
     (async () => {
-      if (rateLimiterMode === RateLimiterMode.Extract && isAgentExtractModelValid((req.body as any)?.agent?.model)) {
-        rateLimiterMode = RateLimiterMode.ExtractAgentPreview;
+      let currentRateLimiterMode = rateLimiterMode;
+      if (currentRateLimiterMode === RateLimiterMode.Extract && isAgentExtractModelValid((req.body as any)?.agent?.model)) {
+        currentRateLimiterMode = RateLimiterMode.ExtractAgentPreview;
       }
 
-      // if (rateLimiterMode === RateLimiterMode.Scrape && isAgentExtractModelValid((req.body as any)?.agent?.model)) {
-      //   rateLimiterMode = RateLimiterMode.ScrapeAgentPreview;
+      // if (currentRateLimiterMode === RateLimiterMode.Scrape && isAgentExtractModelValid((req.body as any)?.agent?.model)) {
+      //   currentRateLimiterMode = RateLimiterMode.ScrapeAgentPreview;
       // }
 
-      const auth = await authenticateUser(req, res, rateLimiterMode);
+      const auth = await authenticateUser(req, res, currentRateLimiterMode);
 
       if (!auth.success) {
         if (!res.headersSent) {
@@ -210,6 +213,19 @@ v1Router.post(
   checkCreditsMiddleware(1),
   blocklistMiddleware,
   wrap(mapController),
+);
+
+v1Router.get(
+  "/crawl/ongoing",
+  authMiddleware(RateLimiterMode.CrawlStatus),
+  wrap(ongoingCrawlsController),
+);
+
+// Public facing, same as ongoing
+v1Router.get(
+  "/crawl/active",
+  authMiddleware(RateLimiterMode.CrawlStatus),
+  wrap(ongoingCrawlsController),
 );
 
 v1Router.get(
